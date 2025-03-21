@@ -98,6 +98,17 @@ textarea, input {
     transform: translateY(0);
 }
 
+.error-message {
+    color: #e53e3e;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.submit-btn:disabled {
+    background: #a0aec0;
+    cursor: not-allowed;
+}
+
 @media (max-width: 1024px) {
     .form-grid {
         grid-template-columns: repeat(2, 1fr);
