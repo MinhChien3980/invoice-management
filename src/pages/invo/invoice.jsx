@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import {Link} from "react-router-dom";
 
 const InvoiceManager = () => {
   const invoices = [
@@ -25,7 +26,9 @@ const InvoiceManager = () => {
         <h1>Quản Lý Hóa Đơn</h1>
         <div className="header-actions">
           <input type="text" placeholder="Tìm kiếm hóa đơn..." className="search-bar" />
-          <button className="add-button">Thêm Hóa Đơn</button>
+          <Link to={'/create'}>
+            Thêm Hóa Đơn
+          </Link>
         </div>
 
         {/* Table */}

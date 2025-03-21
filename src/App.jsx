@@ -1,7 +1,41 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './App.css';
+import axios from "axios";
+import ConfirmDialog from "./components/ConfirmDialog.jsx";
+import {Link} from "react-router-dom";
 
 const InvoiceManager = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const handleOpenDialog = () => {
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setMessage(''); // Clear message when dialog closes
+  };
+
+
+  const handleConfirmDelete = async (invoiceId) => {
+    try {
+      // Make the DELETE request to the API using Axios
+      const response = await axios.delete(`localhost:8080/invoices/${invoiceId}`);
+
+      // Assuming the API returns a success message
+      setMessage('Invoice deleted successfully!');
+      console.log('API Response:', response.data);
+
+      // Close the dialog after successful deletion
+      setIsDialogOpen(false);
+    } catch (error) {
+      // Handle errors (e.g., network error, API error)
+      console.error('Error deleting invoice:', error);
+      setMessage('Failed to delete invoice. Please try again.');
+    }
+  };
+
   const invoices = [
     { id: 'HD001', customer: 'Nguyễn Văn A', date: '01/01/2023', total: '1,000,000 VND' },
     { id: 'HD002', customer: 'Trần Thị B', date: '02/01/2023', total: '500,000 VND' },
@@ -25,7 +59,9 @@ const InvoiceManager = () => {
         <h1>Quản Lý Hóa Đơn</h1>
         <div className="header-actions">
           <input type="text" placeholder="Tìm kiếm hóa đơn..." className="search-bar" />
-          <button className="add-button">Thêm Hóa Đơn</button>
+          <Link to={'/create'}>
+            <button className="add-button">Thêm Hóa Đơn</button>
+          </Link>
         </div>
 
         {/* Table */}
@@ -48,8 +84,13 @@ const InvoiceManager = () => {
                 <td>{invoice.total}</td>
                 <td>
                   <button className="action-button edit">✏️</button>
-                  <button className="action-button delete">🗑️</button>
+                  <button className="action-button delete" onClick={handleOpenDialog}>🗑️</button>
                 </td>
+                <ConfirmDialog
+                    isOpen={isDialogOpen}
+                    onClose={handleCloseDialog}
+                    onConfirm={handleConfirmDelete}
+                />
               </tr>
             ))}
           </tbody>
