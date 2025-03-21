@@ -1,11 +1,17 @@
 import React from "react";
-import './createInvoice.css'
+import './createInvoice.css';
+import { Link } from "react-router-dom";
 
 const InvoiceForm = () => {
     return (
         <div className="container">
             <div className="form-wrapper">
-                <h1 className="title">Tạo Hóa Đơn</h1>
+                <div className="form-header">
+                    <Link to="/" className="back-button">
+                        ← Trở về
+                    </Link>
+                    <h1 className="title">Tạo Hóa Đơn</h1>
+                </div>
                 <form className="form">
                     <div className="form-group">
                         <label>Tên Khách Hàng</label>
@@ -19,7 +25,7 @@ const InvoiceForm = () => {
 
                     <div className="form-group">
                         <label>Ngày Hóa Đơn</label>
-                        <input type="date" color="black"/>
+                        <input type="date" style={{color: "black"}}/>
                     </div>
 
                     <div className="form-group">
