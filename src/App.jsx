@@ -1,102 +1,100 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios';
 import './App.css';
-import axios from "axios";
 import ConfirmDialog from "./components/ConfirmDialog.jsx";
-import {Link} from "react-router-dom";
+
+const API_BASE_URL = 'http://localhost:8080/api/invoices';
 
 const InvoiceManager = () => {
+  const [invoices, setInvoices] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const fetchInvoices = async () => {
+    try {
+      const response = await axios.get(API_BASE_URL);
+      setInvoices(response.data);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+    }
+  };
+
+  // Open Delete Confirmation Dialog
   const handleOpenDialog = () => {
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setMessage(''); // Clear message when dialog closes
+    setMessage('');
   };
-
 
   const handleConfirmDelete = async (invoiceId) => {
     try {
-      // Make the DELETE request to the API using Axios
-      const response = await axios.delete(`localhost:8080/invoices/${invoiceId}`);
-
-      // Assuming the API returns a success message
-      setMessage('Invoice deleted successfully!');
-      console.log('API Response:', response.data);
-
-      // Close the dialog after successful deletion
-      setIsDialogOpen(false);
+      await axios.delete(`${API_BASE_URL}/${invoiceId}`);
+      setMessage('✅ Invoice deleted successfully!');
+      fetchInvoices(); // Refresh list
     } catch (error) {
-      // Handle errors (e.g., network error, API error)
       console.error('Error deleting invoice:', error);
-      setMessage('Failed to delete invoice. Please try again.');
+      setMessage('❌ Failed to delete invoice.');
     }
   };
 
-  const invoices = [
-    { id: 'HD001', customer: 'Nguyễn Văn A', date: '01/01/2023', total: '1,000,000 VND' },
-    { id: 'HD002', customer: 'Trần Thị B', date: '02/01/2023', total: '500,000 VND' },
-    { id: 'HD003', customer: 'Lê Văn C', date: '03/01/2023', total: '750,000 VND' },
-    { id: 'HD004', customer: 'Nguyễn Thị D', date: '04/01/2023', total: '1,200,000 VND' },
-    { id: 'HD005', customer: 'Phạm Văn E', date: '05/01/2023', total: '900,000 VND' },
-  ];
-
   return (
-    <div className="invoice-manager">
-      {/* Sidebar */}
-      <div className="sidebar">
-        <div className="sidebar-item">🏠</div>
-        <div className="sidebar-item">📊</div>
-        <div className="sidebar-item">📋</div>
-        <div className="sidebar-item">⚙️</div>
-      </div>
-
-      {/* Main Content */}
-      <div className="main-content">
-        <h1>Quản Lý Hóa Đơn</h1>
-        <div className="header-actions">
-          <input type="text" placeholder="Tìm kiếm hóa đơn..." className="search-bar" />
-          <Link to={'/create'}>
-            <button className="add-button">Thêm Hóa Đơn</button>
-          </Link>
-        </div>
-
-        {/* Table */}
-        <table className="invoice-table">
-          <thead>
+      <div className="invoice-manager">
+        <div className="main-content">
+          <h1>Quản Lý Hóa Đơn</h1>
+          <table className="invoice-table">
+            <thead>
             <tr>
               <th>Mã Hóa Đơn</th>
               <th>Khách Hàng</th>
               <th>Ngày</th>
               <th>Tổng Tiền</th>
+              <th>Hóa Đơn</th>
               <th>Hành Động</th>
             </tr>
-          </thead>
-          <tbody>
-            {invoices.map((invoice, index) => (
-              <tr key={index}>
-                <td>{invoice.id}</td>
-                <td>{invoice.customer}</td>
-                <td>{invoice.date}</td>
-                <td>{invoice.total}</td>
-                <td>
-                  <button className="action-button edit">✏️</button>
-                  <button className="action-button delete" onClick={handleOpenDialog}>🗑️</button>
-                </td>
-                <ConfirmDialog
-                    isOpen={isDialogOpen}
-                    onClose={handleCloseDialog}
-                    onConfirm={handleConfirmDelete}
-                />
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+            {invoices.length > 0 ? (
+                invoices.map((invoice) => (
+                    <tr key={invoice.id}>
+                      <td>{invoice.invoiceNumber}</td>
+                      <td>{invoice.userName}</td>
+                      <td>{invoice.dateBuy}</td>
+                      <td>{invoice.price} VND</td>
+                      <td>
+                        {invoice.pdfOrImgPath ? (
+                            <a href={invoice.pdfOrImgPath} target="_blank" rel="noopener noreferrer">📄 View File</a>
+                        ) : 'No File'}
+                      </td>
+                      <td>
+                        <button className="action-button edit" onClick={() => navigate(`/update/${invoice.id}`)}>✏️</button>
+                        <button className="action-button delete" onClick={handleOpenDialog}>🗑️</button>
+                        <ConfirmDialog
+                            isOpen={isDialogOpen}
+                            onClose={handleCloseDialog}
+                            onConfirm={() => handleConfirmDelete(invoice.id)}
+                        />
+                      </td>
+                    </tr>
+                ))
+            ) : (
+                <tr>
+                  <td colSpan="6">No invoices found.</td>
+                </tr>
+            )}
+            </tbody>
+          </table>
+          {message && <p>{message}</p>}
+        </div>
       </div>
-    </div>
   );
 };
 
