@@ -9,7 +9,7 @@ const API_BASE_URL = 'http://localhost:8080/api/invoices';
 const InvoiceManager = () => {
   const [invoices, setInvoices] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message] = useState('');
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const navigate = useNavigate();
 

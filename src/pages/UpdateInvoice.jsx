@@ -57,6 +57,7 @@ const UpdateInvoice = () => {
         formData.append("outOfDateToPay", invoice.outOfDateToPay);
         formData.append("amountOfProduct", invoice.amountOfProduct);
         formData.append("productName", invoice.productName);
+        formData.append("statusPaid", invoice.statusPaid);
 
         if (selectedFile) {
             formData.append("file", selectedFile);
