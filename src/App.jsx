@@ -10,6 +10,7 @@ const InvoiceManager = () => {
   const [invoices, setInvoices] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,23 +27,26 @@ const InvoiceManager = () => {
   };
 
   // Open Delete Confirmation Dialog
-  const handleOpenDialog = () => {
+  const handleOpenDialog = (invoiceId) => {
+    setSelectedInvoiceId(invoiceId);
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setMessage('');
+    setSelectedInvoiceId(null);
   };
 
-  const handleConfirmDelete = async (invoiceId) => {
+  const handleConfirmDelete = async () => {
+    if (!selectedInvoiceId) return;
+
     try {
-      await axios.delete(`${API_BASE_URL}/${invoiceId}`);
-      setMessage('✅ Invoice deleted successfully!');
-      fetchInvoices(); // Refresh list
+      await axios.delete(`${API_BASE_URL}/${selectedInvoiceId}`);
+      setInvoices((prevInvoices) => prevInvoices.filter(invoice => invoice.id !== selectedInvoiceId));
+      setIsDialogOpen(false);
+      setSelectedInvoiceId(null);
     } catch (error) {
-      console.error('Error deleting invoice:', error);
-      setMessage('❌ Failed to delete invoice.');
+      console.error('🚨 Error deleting invoice:', error);
     }
   };
 
@@ -55,10 +59,13 @@ const InvoiceManager = () => {
             <tr>
               <th>Mã Hóa Đơn</th>
               <th>Khách Hàng</th>
-              <th>Ngày</th>
+              <th>Ngày mua</th>
+              <th>Ngày Đến Hạn</th>
+              <th>Số lượng</th>
               <th>Tổng Tiền</th>
-              <th>Hóa Đơn</th>
-              <th>Hành Động</th>
+              <th>Tên Sản Phẩm</th>
+              <th>Status Hóa đơn</th>
+              <th>Status đã trả tiền</th>
             </tr>
             </thead>
             <tbody>
@@ -68,15 +75,31 @@ const InvoiceManager = () => {
                       <td>{invoice.invoiceNumber}</td>
                       <td>{invoice.userName}</td>
                       <td>{invoice.dateBuy}</td>
+                      <td>{invoice.outOfDateToPay}</td>
+                      <td>{invoice.amountOfProduct}</td>
                       <td>{invoice.price} VND</td>
+                      <td>{invoice.productName}</td>
+                      <td>{invoice.statusHasInvoice ? '✔️' : '❌'}</td>
+                      <td>{invoice.statusPaid ? '✔️' : '❌'}</td>
                       <td>
                         {invoice.pdfOrImgPath ? (
-                            <a href={invoice.pdfOrImgPath} target="_blank" rel="noopener noreferrer">📄 View File</a>
+                            <a
+                                href={
+                                  invoice.pdfOrImgPath.includes("/files/")
+                                      ? invoice.pdfOrImgPath.replace("/files/", "/uploads/") // Convert "/files/" to "/uploads/"
+                                      : `http://localhost:8080/uploads/${invoice.pdfOrImgPath.split('/').pop()}` // Ensure correct path
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                              📄 View File
+                            </a>
                         ) : 'No File'}
                       </td>
                       <td>
-                        <button className="action-button edit" onClick={() => navigate(`/update/${invoice.id}`)}>✏️</button>
-                        <button className="action-button delete" onClick={handleOpenDialog}>🗑️</button>
+                        <button className="action-button edit" onClick={() => navigate(`/update/${invoice.id}`)}>✏️
+                        </button>
+                        <button className="action-button delete" onClick={() => handleOpenDialog(invoice.id)}>🗑️</button>
                         <ConfirmDialog
                             isOpen={isDialogOpen}
                             onClose={handleCloseDialog}
