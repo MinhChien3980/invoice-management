@@ -1,11 +1,11 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {useParams, useNavigate, Link} from "react-router-dom";
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8080/api/invoices';
 
 const UpdateInvoice = () => {
-    const {id} = useParams(); // Use id instead of invoiceNumber
+    const { id } = useParams(); // Use id instead of invoiceNumber
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
@@ -16,7 +16,6 @@ const UpdateInvoice = () => {
     });
 
     const [selectedFile, setSelectedFile] = useState(null);
-    const [uploadMessage] = useState('');
 
     useEffect(() => {
         fetchInvoice();
@@ -33,13 +32,12 @@ const UpdateInvoice = () => {
     };
 
     const handleChange = (e) => {
-        const {name, value, type, checked} = e.target;
+        const { name, value, type, checked } = e.target;
         setInvoice({
             ...invoice,
             [name]: type === "checkbox" ? checked : value
         });
     };
-
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -52,12 +50,13 @@ const UpdateInvoice = () => {
         const formData = new FormData();
         formData.append("invoiceNumber", invoice.invoiceNumber);
         formData.append("userName", invoice.userName);
+        formData.append("approved", invoice.approved); // Fixed from 'approveDate' to 'approved'
+        formData.append("approveDate", invoice.approveDate); // Explicitly handling approveDate
+        formData.append("customerName", invoice.customerName);
         formData.append("dateBuy", invoice.dateBuy);
-        formData.append("price", invoice.price);
         formData.append("outOfDateToPay", invoice.outOfDateToPay);
-        formData.append("amountOfProduct", invoice.amountOfProduct);
-        formData.append("productName", invoice.productName);
         formData.append("statusPaid", invoice.statusPaid);
+        formData.append("statusHasInvoice", invoice.statusHasInvoice);
 
         if (selectedFile) {
             formData.append("file", selectedFile);
@@ -65,7 +64,7 @@ const UpdateInvoice = () => {
 
         try {
             await axios.put(`${API_BASE_URL}/update/${id}`, formData, {
-                headers: {"Content-Type": "multipart/form-data"}
+                headers: { "Content-Type": "multipart/form-data" }
             });
 
             console.log("✅ Invoice updated successfully!");
@@ -101,7 +100,7 @@ const UpdateInvoice = () => {
                         <input
                             type="text"
                             name="customerName"
-                            value={invoice.userName}
+                            value={invoice.customerName} // Correct binding to customerName
                             onChange={handleChange}
                             placeholder="Nhập tên khách hàng"
                             required
@@ -109,12 +108,13 @@ const UpdateInvoice = () => {
                     </div>
 
                     <div className="form-group">
-                        <label>Sản phẩm</label>
+                        <label>Tên người dùng</label>
                         <input
                             type="text"
-                            name="productName"
-                            value={invoice.productName}
+                            name="userName"
+                            value={invoice.userName}
                             onChange={handleChange}
+                            placeholder="Nhập tên người dùng"
                             required
                         />
                     </div>
@@ -141,52 +141,27 @@ const UpdateInvoice = () => {
                         />
                     </div>
 
-
-                    <div className="form-group">
-                        <label>Số lượng</label>
-                        <input
-                            type='number'
-                            name="amountOfProduct"
-                            value={invoice.amountOfProduct}
-                            onChange={handleChange}
-                            placeholder="Nhập số lượng sản phẩm"
-                            required
-                        ></input>
-
-                        <div className="form-group">
-                            <label>Tổng tiền</label>
-                            <input
-                                type="number"
-                                name="totalPrice"
-                                value={invoice.totalPrice}
-                                onChange={handleChange}
-                                placeholder="Nhập tổng số tiền"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div>
                         <label>Đã Trả Tiền:</label>
                         <input
+                            style={{marginLeft:"20px"}}
                             type="checkbox"
                             name="statusPaid"
-                            checked={invoice.statusPaid || false}
+                            checked={invoice.statusPaid}
                             onChange={handleChange}
                         />
-                    </div>
 
-                    <label>Upload File:</label>
-                    <button type="button" onClick={() => fileInputRef.current.click()}>📂 Chọn Tệp</button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{display: 'none'}}
-                        onChange={handleFileChange}
-                        accept=".pdf,.jpg,.png"
-                    />
-                    {selectedFile && <p>📄 Selected File: {selectedFile.name}</p>}
-                    {uploadMessage && <p>{uploadMessage}</p>}
+                    <div>
+                        <label>Upload File:</label>
+                        <button type="button" onClick={() => fileInputRef.current.click()}>📂 Chọn Tệp</button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{display: 'none'}}
+                            onChange={handleFileChange}
+                            accept=".pdf,.jpg,.png"
+                        />
+                        {selectedFile && <p>📄 Selected File: {selectedFile.name}</p>}
+                    </div>
 
                     {invoice.pdfOrImgPath && (
                         <p>🔗 Current File: <a href={`http://localhost:8080/files/${invoice.pdfOrImgPath}`}
