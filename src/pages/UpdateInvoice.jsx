@@ -5,14 +5,22 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:8080/api/invoices';
 
 const UpdateInvoice = () => {
-    const { id } = useParams(); // Use id instead of invoiceNumber
+    const { id } = useParams();
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
     const [invoice, setInvoice] = useState({
+        invoiceNumber: '',
         userName: '',
+        customerName: '',
+        approved: false,
+        approveDate: '',
+        statusPaid: false,
+        statusHasInvoice: false,
         dateBuy: '',
-        price: 0
+        outOfDateToPay: '',
+        pdfOrImgPath: '',
+        invoiceDetails: [] // Holds product details
     });
 
     const [selectedFile, setSelectedFile] = useState(null);
@@ -44,38 +52,51 @@ const UpdateInvoice = () => {
         setSelectedFile(file);
     };
 
+    // ✅ Handle product details update
+    const handleDetailChange = (index, e) => {
+        const { name, value } = e.target;
+        const updatedDetails = [...invoice.invoiceDetails];
+        updatedDetails[index][name] = value;
+        setInvoice({ ...invoice, invoiceDetails: updatedDetails });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-        formData.append("invoiceNumber", invoice.invoiceNumber);
-        formData.append("userName", invoice.userName);
-        formData.append("approved", invoice.approved); // Fixed from 'approveDate' to 'approved'
-        formData.append("approveDate", invoice.approveDate); // Explicitly handling approveDate
-        formData.append("customerName", invoice.customerName);
-        formData.append("dateBuy", invoice.dateBuy);
-        formData.append("outOfDateToPay", invoice.outOfDateToPay);
-        formData.append("statusPaid", invoice.statusPaid);
-        formData.append("statusHasInvoice", invoice.statusHasInvoice);
-
-        if (selectedFile) {
-            formData.append("file", selectedFile);
-        }
+        // ✅ Create JSON object (not FormData)
+        const updatedInvoice = {
+            invoiceNumber: invoice.invoiceNumber,
+            userName: invoice.userName,
+            customerName: invoice.customerName,
+            approved: invoice.approved,
+            approveDate: invoice.approveDate || null, // Ensure approveDate is not undefined
+            statusPaid: invoice.statusPaid,
+            statusHasInvoice: invoice.statusHasInvoice,
+            dateBuy: invoice.dateBuy,
+            outOfDateToPay: invoice.outOfDateToPay,
+            invoiceDetails: invoice.invoiceDetails.map(detail => ({
+                id: detail.id || null, // Ensure `id` is sent as null if it's a new item
+                productName: detail.productName,
+                quantity: detail.quantity,
+                price: detail.price
+            }))
+        };
 
         try {
-            await axios.put(`${API_BASE_URL}/update/${id}`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }
+            // ✅ Send as JSON, NOT FormData
+            await axios.put(`${API_BASE_URL}/update/${id}`, updatedInvoice, {
+                headers: { "Content-Type": "application/json" }
             });
 
             console.log("✅ Invoice updated successfully!");
-            navigate('/'); // Redirect to Invoice Manager after update
+            navigate('/'); // Redirect to the invoice list
         } catch (error) {
-            console.error("🚨 Error updating invoice:", error);
+            console.error("🚨 Error updating invoice:", error.response?.data || error.message);
         }
     };
 
     return (
-        <div className="container">
+        <div className="container" style={{ color: "black" }}>
             <div className="form-wrapper">
                 <Link to="/" className="back-button">
                     ← Trở về
@@ -100,9 +121,8 @@ const UpdateInvoice = () => {
                         <input
                             type="text"
                             name="customerName"
-                            value={invoice.customerName} // Correct binding to customerName
+                            value={invoice.customerName}
                             onChange={handleChange}
-                            placeholder="Nhập tên khách hàng"
                             required
                         />
                     </div>
@@ -114,7 +134,6 @@ const UpdateInvoice = () => {
                             name="userName"
                             value={invoice.userName}
                             onChange={handleChange}
-                            placeholder="Nhập tên người dùng"
                             required
                         />
                     </div>
@@ -141,22 +160,57 @@ const UpdateInvoice = () => {
                         />
                     </div>
 
+                    <div>
                         <label>Đã Trả Tiền:</label>
                         <input
-                            style={{marginLeft:"20px"}}
+                            style={{ marginLeft: "20px" }}
                             type="checkbox"
                             name="statusPaid"
                             checked={invoice.statusPaid}
                             onChange={handleChange}
                         />
+                    </div>
+
+                    {/* ✅ Product Details Section */}
+                    <h2>Chi Tiết Sản Phẩm</h2>
+                    {invoice.invoiceDetails.map((detail, index) => (
+                        <div key={index} className="form-group">
+                            <label>Sản phẩm {index + 1}</label>
+                            <input
+                                type="text"
+                                name="productName"
+                                value={detail.productName}
+                                onChange={(e) => handleDetailChange(index, e)}
+                                required
+                            />
+                            <label>Số lượng</label>
+                            <input
+                                type="number"
+                                name="quantity"
+                                value={detail.quantity}
+                                onChange={(e) => handleDetailChange(index, e)}
+                                required
+                            />
+                            <label>Giá</label>
+                            <input
+                                type="number"
+                                name="price"
+                                value={detail.price}
+                                onChange={(e) => handleDetailChange(index, e)}
+                                required
+                            />
+                        </div>
+                    ))}
 
                     <div>
                         <label>Upload File:</label>
-                        <button type="button" onClick={() => fileInputRef.current.click()}>📂 Chọn Tệp</button>
+                        <button type="button" onClick={() => fileInputRef.current.click()}>
+                            📂 Chọn Tệp
+                        </button>
                         <input
                             type="file"
                             ref={fileInputRef}
-                            style={{display: 'none'}}
+                            style={{ display: 'none' }}
                             onChange={handleFileChange}
                             accept=".pdf,.jpg,.png"
                         />
@@ -164,9 +218,12 @@ const UpdateInvoice = () => {
                     </div>
 
                     {invoice.pdfOrImgPath && (
-                        <p>🔗 Current File: <a href={`http://localhost:8080/files/${invoice.pdfOrImgPath}`}
-                                              target="_blank"
-                                              rel="noopener noreferrer">View File</a></p>
+                        <p>
+                            🔗 File hiện tại:{" "}
+                            <a href={`http://localhost:8080/files/${invoice.pdfOrImgPath}`} target="_blank" rel="noopener noreferrer">
+                                Xem Tệp
+                            </a>
+                        </p>
                     )}
 
                     <button type="submit">Cập Nhật</button>
