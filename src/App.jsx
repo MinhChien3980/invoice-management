@@ -7,10 +7,12 @@ import ConfirmDialog from "./components/ConfirmDialog.jsx";
 const API_BASE_URL = 'http://localhost:8080/api/invoices';
 
 const InvoiceManager = () => {
+    const [filteredInvoices, setFilteredInvoices] = useState([]);
     const [invoices, setInvoices] = useState([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [message] = useState('');
     const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('')
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -50,15 +52,41 @@ const InvoiceManager = () => {
         }
     };
 
+    const handleSearchChange = (e) => {
+        const term = e.target.value;
+        setSearchTerm(term);
+
+        if (term === '') {
+            setFilteredInvoices(invoices); // If search is empty, show all invoices
+        } else {
+            const filtered = invoices.filter((invoice) =>
+                invoice.invoiceNumber.toLowerCase().includes(term.toLowerCase()) ||
+                invoice.userName.toLowerCase().includes(term.toLowerCase()) ||
+                invoice.productName.toLowerCase().includes(term.toLowerCase())
+            );
+            setFilteredInvoices(filtered); // Set filtered invoices based on search term
+        }
+    };
+
     return (
         <div className="invoice-manager">
             <div className="main-content">
-                <div style={{width:'100%',display:'flex', alignItems: 'center', justifyContent:'space-between'}}>
-                    <h1>Quản Lý Hóa Đơn</h1>
+                <h1>Quản Lý Hóa Đơn</h1>
+                <div style={{width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+
+                    <div className="search-bar">
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            placeholder="Tìm kiếm hóa đơn..."
+                        />
+                    </div>
                     <Link to={"/create"}>
-                        <button style={{border:'2px', background:'gray'}}>Tạo hóa đơn</button>
+                        <button style={{border: '2px', background: 'lightgreen'}}>Tạo hóa đơn</button>
                     </Link>
                 </div>
+
                 <table className="invoice-table">
                     <thead>
                     <tr>
