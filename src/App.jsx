@@ -118,10 +118,7 @@ const InvoiceManager = () => {
                                     {invoice.pdfOrImgPath ? (
                                         <a
                                             href={
-                                                invoice.pdfOrImgPath.includes("/files/")
-                                                    ? invoice.pdfOrImgPath.replace("/files/", "/uploads/") // Convert "/files/" to "/uploads/"
-                                                    : `http://localhost:8080/uploads/${invoice.pdfOrImgPath.split('/').pop()}` // Ensure correct path
-                                            }
+                                                `http://localhost:8080/files/${invoice.pdfOrImgPath.split('/').pop()}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >

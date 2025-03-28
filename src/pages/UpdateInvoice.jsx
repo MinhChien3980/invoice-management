@@ -78,37 +78,42 @@ const UpdateInvoice = () => {
         setInvoice({ ...invoice, invoiceDetails: updatedDetails });
     };
 
+    const handleFileUpload = async () => {
+        if (!selectedFile) return;
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/${id}/upload`,
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
+            console.log("✅ File uploaded:", response.data);
+
+            setInvoice({ ...invoice, pdfOrImgPath: response.data.filePath });
+
+        } catch (error) {
+            console.error("🚨 Error uploading file:", error);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // ✅ Create JSON object (not FormData)
-        const updatedInvoice = {
-            invoiceNumber: invoice.invoiceNumber,
-            userName: invoice.userName,
-            customerName: invoice.customerName,
-            approved: invoice.approved,
-            approveDate: invoice.approveDate || null,
-            statusPaid: invoice.statusPaid,
-            statusHasInvoice: invoice.statusHasInvoice,
-            dateBuy: invoice.dateBuy,
-            outOfDateToPay: invoice.outOfDateToPay,
-            invoiceDetails: invoice.invoiceDetails.map(detail => ({
-                id: detail.id || null, // Ensure `id` is sent as null if it's a new item
-                productName: detail.productName,
-                quantity: detail.quantity,
-                price: detail.price
-            }))
-        };
+        await handleFileUpload();
 
         try {
-            await axios.put(`${API_BASE_URL}/update/${id}`, updatedInvoice, {
+            await axios.put(`${API_BASE_URL}/update/${id}`, invoice, {
                 headers: { "Content-Type": "application/json" }
             });
 
             console.log("✅ Invoice updated successfully!");
-            navigate('/'); // Redirect to the invoice list
+            navigate('/'); // Redirect after update
+
         } catch (error) {
-            console.error("🚨 Error updating invoice:", error.response?.data || error.message);
+            console.error("🚨 Error updating invoice:", error);
         }
     };
 
@@ -241,7 +246,9 @@ const UpdateInvoice = () => {
                     {invoice.pdfOrImgPath && (
                         <p>
                             🔗 File hiện tại:{" "}
-                            <a href={`http://localhost:8080/${invoice.pdfOrImgPath}`} target="_blank" rel="noopener noreferrer">
+                            <a href={`http://localhost:8080/files/${invoice.pdfOrImgPath.split('/').pop()}`}
+                               target="_blank"
+                               rel="noopener noreferrer">
                                 Xem Tệp
                             </a>
                         </p>
