@@ -244,14 +244,24 @@ const UpdateInvoice = () => {
                     </div>
 
                     {invoice.pdfOrImgPath && (
-                        <p>
-                            🔗 File hiện tại:{" "}
-                            <a href={`http://localhost:8080/files/${invoice.pdfOrImgPath.split('/').pop()}`}
-                               target="_blank"
-                               rel="noopener noreferrer">
-                                Xem Tệp
-                            </a>
-                        </p>
+                        <div>
+                            <h3>📂 File đính kèm</h3>
+                            {invoice.pdfOrImgPath.endsWith('.pdf') ? (
+                                <iframe
+                                    src={`http://localhost:8080/files/${invoice.pdfOrImgPath.split('/').pop()}`}
+                                    width="100%"
+                                    height="500px"
+                                    style={{ border: "none" }}
+                                />
+                            ) : (
+                                // Display image directly
+                                <img
+                                    src={`http://localhost:8080/files/${invoice.pdfOrImgPath.split('/').pop()}`}
+                                    alt="Invoice Attachment"
+                                    style={{ maxWidth: "100%", height: "auto", border: "1px solid #ccc", padding: "5px" }}
+                                />
+                            )}
+                        </div>
                     )}
 
                     <button type="submit">Cập Nhật</button>

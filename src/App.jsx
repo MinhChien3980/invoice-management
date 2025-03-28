@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {Link, useNavigate} from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import './App.css';
 import ConfirmDialog from "./components/ConfirmDialog.jsx";
@@ -12,7 +12,7 @@ const InvoiceManager = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [message] = useState('');
     const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('')
+    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,6 +23,7 @@ const InvoiceManager = () => {
         try {
             const response = await axios.get(API_BASE_URL);
             setInvoices(response.data);
+            setFilteredInvoices(response.data);
         } catch (error) {
             console.error('Error fetching invoices:', error);
         }
@@ -45,6 +46,7 @@ const InvoiceManager = () => {
         try {
             await axios.delete(`${API_BASE_URL}/${selectedInvoiceId}`);
             setInvoices((prevInvoices) => prevInvoices.filter(invoice => invoice.id !== selectedInvoiceId));
+            setFilteredInvoices((prevInvoices) => prevInvoices.filter(invoice => invoice.id !== selectedInvoiceId));
             setIsDialogOpen(false);
             setSelectedInvoiceId(null);
         } catch (error) {
@@ -57,14 +59,14 @@ const InvoiceManager = () => {
         setSearchTerm(term);
 
         if (term === '') {
-            setFilteredInvoices(invoices); // If search is empty, show all invoices
+            setFilteredInvoices(invoices);
         } else {
             const filtered = invoices.filter((invoice) =>
                 invoice.invoiceNumber.toLowerCase().includes(term.toLowerCase()) ||
                 invoice.userName.toLowerCase().includes(term.toLowerCase()) ||
-                invoice.productName.toLowerCase().includes(term.toLowerCase())
+                (invoice.productName && invoice.productName.toLowerCase().includes(term.toLowerCase()))
             );
-            setFilteredInvoices(filtered); // Set filtered invoices based on search term
+            setFilteredInvoices(filtered);
         }
     };
 
@@ -72,8 +74,7 @@ const InvoiceManager = () => {
         <div className="invoice-manager">
             <div className="main-content">
                 <h1>Quản Lý Hóa Đơn</h1>
-                <div style={{width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-
+                <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div className="search-bar">
                         <input
                             type="text"
@@ -83,7 +84,7 @@ const InvoiceManager = () => {
                         />
                     </div>
                     <Link to={"/create"}>
-                        <button style={{border: '2px', background: 'lightgreen'}}>Tạo hóa đơn</button>
+                        <button style={{ border: '2px solid black', background: 'lightgreen' }}>Tạo hóa đơn</button>
                     </Link>
                 </div>
 
@@ -94,35 +95,30 @@ const InvoiceManager = () => {
                         <th>Khách Hàng</th>
                         <th>Ngày mua</th>
                         <th>Ngày Đến Hạn</th>
-                        <th>Số lượng</th>
-                        <th>Tổng Tiền</th>
-                        <th>Tên Sản Phẩm</th>
                         <th>Status Hóa đơn</th>
                         <th>Status đã trả tiền</th>
+                        <th>File Đính Kèm</th>
+                        <th>Hành động</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {invoices.length > 0 ? (
-                        invoices.map((invoice) => (
+                    {filteredInvoices.length > 0 ? (
+                        filteredInvoices.map((invoice) => (
                             <tr key={invoice.id}>
                                 <td>{invoice.invoiceNumber}</td>
                                 <td>{invoice.userName}</td>
                                 <td>{invoice.dateBuy}</td>
                                 <td>{invoice.outOfDateToPay}</td>
-                                <td>{invoice.amountOfProduct}</td>
-                                <td>{invoice.price} VND</td>
-                                <td>{invoice.productName}</td>
                                 <td>{invoice.statusHasInvoice ? '✔️' : '❌'}</td>
                                 <td>{invoice.statusPaid ? '✔️' : '❌'}</td>
                                 <td>
                                     {invoice.pdfOrImgPath ? (
                                         <a
-                                            href={
-                                                `http://localhost:8080/files/${invoice.pdfOrImgPath.split('/').pop()}`}
+                                            href={`http://localhost:8080/files/${invoice.pdfOrImgPath.split('/').pop()}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            📄 View File
+                                            📄 Xem Tệp
                                         </a>
                                     ) : 'No File'}
                                 </td>
@@ -143,7 +139,7 @@ const InvoiceManager = () => {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="6">No invoices found.</td>
+                            <td colSpan="8">No invoices found.</td>
                         </tr>
                     )}
                     </tbody>
