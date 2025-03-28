@@ -56,7 +56,25 @@ const UpdateInvoice = () => {
     const handleDetailChange = (index, e) => {
         const { name, value } = e.target;
         const updatedDetails = [...invoice.invoiceDetails];
-        updatedDetails[index][name] = value;
+        updatedDetails[index] = { ...updatedDetails[index], [name]: value };
+        setInvoice({ ...invoice, invoiceDetails: updatedDetails });
+    };
+
+    // ✅ Add new product detail
+    const addDetail = () => {
+        setInvoice({
+            ...invoice,
+            invoiceDetails: [
+                ...invoice.invoiceDetails,
+                { productName: '', quantity: 1, price: 0 }
+            ]
+        });
+    };
+
+    // ✅ Remove a product detail
+    const removeDetail = (index) => {
+        const updatedDetails = [...invoice.invoiceDetails];
+        updatedDetails.splice(index, 1);
         setInvoice({ ...invoice, invoiceDetails: updatedDetails });
     };
 
@@ -69,7 +87,7 @@ const UpdateInvoice = () => {
             userName: invoice.userName,
             customerName: invoice.customerName,
             approved: invoice.approved,
-            approveDate: invoice.approveDate || null, // Ensure approveDate is not undefined
+            approveDate: invoice.approveDate || null,
             statusPaid: invoice.statusPaid,
             statusHasInvoice: invoice.statusHasInvoice,
             dateBuy: invoice.dateBuy,
@@ -83,7 +101,6 @@ const UpdateInvoice = () => {
         };
 
         try {
-            // ✅ Send as JSON, NOT FormData
             await axios.put(`${API_BASE_URL}/update/${id}`, updatedInvoice, {
                 headers: { "Content-Type": "application/json" }
             });
@@ -199,8 +216,12 @@ const UpdateInvoice = () => {
                                 onChange={(e) => handleDetailChange(index, e)}
                                 required
                             />
+                            <button type="button" onClick={() => removeDetail(index)}>🗑 Xóa</button>
                         </div>
                     ))}
+
+                    {/* ✅ Add product detail button */}
+                    <button type="button" onClick={addDetail}>➕ Thêm sản phẩm</button>
 
                     <div>
                         <label>Upload File:</label>
@@ -220,7 +241,7 @@ const UpdateInvoice = () => {
                     {invoice.pdfOrImgPath && (
                         <p>
                             🔗 File hiện tại:{" "}
-                            <a href={`http://localhost:8080/files/${invoice.pdfOrImgPath}`} target="_blank" rel="noopener noreferrer">
+                            <a href={`http://localhost:8080/${invoice.pdfOrImgPath}`} target="_blank" rel="noopener noreferrer">
                                 Xem Tệp
                             </a>
                         </p>
