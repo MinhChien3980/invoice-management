@@ -1,5 +1,46 @@
+/* Add this to your existing App.css or a separate CSS file */
+
+/* Style for the search bar container */
+.search-bar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start; /* Aligns the search box to the left */
+  margin-bottom: 20px; /* Adds some space below the search bar */
+  padding: 10px 0;
+}
+
+/* Style for the search input field */
+.search-bar input {
+  width: 300px; /* Sets a fixed width for the search input */
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc; /* Light gray border */
+  border-radius: 5px; /* Rounded corners */
+  outline: none; /* Removes the outline on focus */
+  transition: border-color 0.3s ease; /* Smooth transition on focus */
+}
+
+/* Style for the search input field when focused */
+.search-bar input:focus {
+  border-color: #4CAF50; /* Green border on focus */
+  box-shadow: 0 0 5px rgba(0, 128, 0, 0.3); /* Light green shadow on focus */
+}
+
+/* Optional: Add a search icon inside the input */
+.search-bar input::placeholder {
+  color: #888; /* Light gray placeholder text */
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .search-bar input {
+    width: 100%; /* Make search input full width on smaller screens */
+  }
+}
+
+
 .invoice-manager {
-  min-width: 1800px;
+  min-width: 1500px;
   background-color: #F3F4F6;
   display: flex;
   height: 100vh;
