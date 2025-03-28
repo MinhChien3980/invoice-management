@@ -1,18 +1,16 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import './createInvoice.css';
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 const InvoiceForm = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         customerName: '',
-        customerEmail: '',
-        invoiceDate: '',
-        items: '',
-        unitPrice: '',
+        dateBuy: '',
+        dateExpired: '',
         quantity: '',
-        totalAmount: '',
-        notes: ''
+        productName: '',
+        totalPrice: ''
     });
 
     const [errors, setErrors] = useState({});
@@ -70,7 +68,7 @@ const InvoiceForm = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -86,7 +84,7 @@ const InvoiceForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+        console.log(formData)
         if (!validateForm()) {
             return;
         }
@@ -96,10 +94,10 @@ const InvoiceForm = () => {
         try {
             // API call would go here
             // const response = await axios.post('your-api-endpoint', formData);
-            
+
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Success handling
             alert('Hóa đơn đã được tạo thành công!');
             navigate('/'); // Redirect to home page
@@ -115,9 +113,9 @@ const InvoiceForm = () => {
     return (
         <div className="container">
             <div className="form-wrapper">
-                    <Link to="/" className="back-button">
-                        ← Trở về
-                    </Link>
+                <Link to="/" className="back-button">
+                    ← Trở về
+                </Link>
                 <div className="form-header">
                     <h1 className="title">Tạo Hóa Đơn</h1>
                 </div>
@@ -135,90 +133,66 @@ const InvoiceForm = () => {
                     </div>
 
                     <div className="form-group">
-                        <label>Email Khách Hàng</label>
-                        <input
-                            type="email"
-                            name="customerEmail"
-                            value={formData.customerEmail}
-                            onChange={handleChange}
-                            placeholder="Nhập email khách hàng"
-                        />
-                        {errors.customerEmail && <span className="error-message">{errors.customerEmail}</span>}
-                    </div>
-
-                    <div className="form-group">
-                        <label>Ngày Hóa Đơn</label>
+                        <label>Ngày mua</label>
                         <input
                             type="date"
-                            name="invoiceDate"
-                            value={formData.invoiceDate}
+                            name="dateBuy"
+                            value={formData.dateBuy}
                             onChange={handleChange}
                         />
-                        {errors.invoiceDate && <span className="error-message">{errors.invoiceDate}</span>}
+                        {errors.dateBuy && <span className="error-message">{errors.dateBuy}</span>}
                     </div>
 
                     <div className="form-group">
-                        <label>Mặt Hàng</label>
-                        <textarea
-                            name="items"
-                            value={formData.items}
-                            onChange={handleChange}
-                            placeholder="Nhập mặt hàng và số lượng"
-                            rows="4"
-                        ></textarea>
-                        {errors.items && <span className="error-message">{errors.items}</span>}
-                    </div>
-
-                    <div className="form-group">
-                        <label>Giá Đơn Vị</label>
+                        <label>Ngày đến hạn</label>
                         <input
-                            type="number"
-                            name="unitPrice"
-                            value={formData.unitPrice}
+                            type="date"
+                            name="dateExpired"
+                            value={formData.dateExpired}
                             onChange={handleChange}
-                            placeholder="Nhập giá đơn vị"
                         />
-                        {errors.unitPrice && <span className="error-message">{errors.unitPrice}</span>}
+                        {errors.dateExpired && <span className="error-message">{errors.dateExpired}</span>}
                     </div>
 
                     <div className="form-group">
-                        <label>Số Lượng</label>
+                        <label>Số lượng</label>
                         <input
-                            type="number"
+                            type='number'
                             name="quantity"
                             value={formData.quantity}
                             onChange={handleChange}
-                            placeholder="Nhập số lượng"
-                        />
+                            placeholder="Nhập số lượng sản phẩm"
+                        ></input>
                         {errors.quantity && <span className="error-message">{errors.quantity}</span>}
                     </div>
 
                     <div className="form-group">
-                        <label>Tổng Số Tiền</label>
+                        <label>Tổng tiền</label>
                         <input
                             type="number"
-                            name="totalAmount"
-                            value={formData.totalAmount}
+                            name="totalPrice"
+                            value={formData.totalPrice}
                             onChange={handleChange}
                             placeholder="Nhập tổng số tiền"
                         />
-                        {errors.totalAmount && <span className="error-message">{errors.totalAmount}</span>}
+                        {errors.totalPrice && <span className="error-message">{errors.totalPrice}</span>}
                     </div>
 
                     <div className="form-group">
-                        <label>Ghi Chú</label>
-                        <textarea
-                            name="notes"
-                            value={formData.notes}
+                        <label>Tên sản phẩm </label>
+                        <input
+                            type="text"
+                            name="productName"
+                            value={formData.productName}
                             onChange={handleChange}
-                            placeholder="Nhập ghi chú nếu có"
-                            rows="4"
-                        ></textarea>
+                            placeholder="Nhập tên sảm phẩm"
+                        />
+                        {errors.productName && <span className="error-message">{errors.productName}</span>}
                     </div>
 
                     <div className="button-container">
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             className="submit-btn"
                             disabled={isSubmitting}
                         >
